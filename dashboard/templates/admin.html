@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel — Canary Engine</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0e1a;
+            color: #e0e6f0;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #0d1117;
+            border-bottom: 1px solid #da3633;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            color: #f85149;
+            letter-spacing: 2px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-info {
+            font-size: 12px;
+            color: #8b949e;
+        }
+
+        .user-info span { color: #f85149; font-weight: bold; }
+
+        .role-badge {
+            font-size: 10px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: #2d1117;
+            color: #f85149;
+            border: 1px solid #da3633;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid #1e3a5f;
+            color: #8b949e;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            border-color: #58a6ff;
+            color: #58a6ff;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid #da3633;
+            color: #f85149;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            text-decoration: none;
+        }
+
+        .logout-btn:hover { background: #2d1117; }
+
+        .timestamp {
+            font-size: 11px;
+            color: #8b949e;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ADMIN BANNER */
+        .admin-banner {
+            background: #2d1117;
+            border: 1px solid #da3633;
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 12px;
+            color: #f85149;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .card {
+            background: #0d1117;
+            border: 1px solid #1e3a5f;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .card.danger-card {
+            border-color: #da3633;
+        }
+
+        .card h2 {
+            font-size: 11px;
+            color: #8b949e;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #1e3a5f;
+        }
+
+        /* STAT CARDS */
+        .stat-card {
+            background: #0d1117;
+            border: 1px solid #1e3a5f;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #8b949e;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .stat-red { color: #f85149; }
+        .stat-green { color: #3fb950; }
+        .stat-blue { color: #58a6ff; }
+        .stat-yellow { color: #e3b341; }
+
+        /* STATUS */
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #161b22;
+            font-size: 13px;
+        }
+
+        .status-item:last-child { border-bottom: none; }
+
+        .badge {
+            font-size: 10px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .badge-green {
+            background: #0d2f1f;
+            color: #3fb950;
+            border: 1px solid #238636;
+        }
+
+        .badge-red {
+            background: #2d1117;
+            color: #f85149;
+            border: 1px solid #da3633;
+        }
+
+        .badge-yellow {
+            background: #2d2100;
+            color: #e3b341;
+            border: 1px solid #9e6a03;
+        }
+
+        /* CONTROLS */
+        .step-label {
+            font-size: 10px;
+            color: #8b949e;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .ctrl-btn {
+            width: 100%;
+            padding: 11px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            transition: opacity 0.2s;
+        }
+
+        .ctrl-btn:hover { opacity: 0.8; }
+        .ctrl-btn:last-child { margin-bottom: 0; }
+
+        .btn-green  { background: #238636; color: white; }
+        .btn-red    { background: #da3633; color: white; }
+        .btn-blue   { background: #1f6feb; color: white; }
+        .btn-yellow { background: #9e6a03; color: white; }
+        .btn-purple { background: #6e40c9; color: white; }
+
+        /* BLOCKED IPS */
+        .ip-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            background: #161b22;
+            border-radius: 4px;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+
+        .ip-address { color: #f85149; font-weight: bold; }
+
+        .unblock-btn {
+            background: transparent;
+            border: 1px solid #238636;
+            color: #3fb950;
+            padding: 3px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .unblock-btn:hover { background: #0d2f1f; }
+
+        /* USAGE BARS */
+        .usage-item { margin-bottom: 10px; }
+
+        .usage-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #8b949e;
+            margin-bottom: 4px;
+        }
+
+        .usage-bar {
+            height: 5px;
+            background: #161b22;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .usage-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s;
+        }
+
+        /* CANARY FILES */
+        .canary-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 7px 0;
+            border-bottom: 1px solid #161b22;
+            font-size: 12px;
+        }
+
+        .canary-item:last-child { border-bottom: none; }
+
+        /* LOG VIEWER */
+        .log-viewer {
+            background: #010409;
+            border: 1px solid #1e3a5f;
+            border-radius: 6px;
+            padding: 12px;
+            height: 250px;
+            overflow-y: auto;
+            font-size: 11px;
+            line-height: 1.8;
+        }
+
+        .log-line { color: #8b949e; }
+        .log-line.alert { color: #f85149; font-weight: bold; }
+        .log-line.success { color: #3fb950; }
+        .log-line.info { color: #58a6ff; }
+
+        /* USER MANAGEMENT */
+        .field {
+            margin-bottom: 10px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 10px;
+            color: #8b949e;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .field input, .field select {
+            width: 100%;
+            background: #161b22;
+            border: 1px solid #1e3a5f;
+            border-radius: 4px;
+            padding: 8px 10px;
+            color: #e0e6f0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .field input:focus { border-color: #58a6ff; }
+
+        .no-data {
+            color: #8b949e;
+            font-size: 12px;
+            text-align: center;
+            padding: 12px;
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #161b22;
+            border: 1px solid #238636;
+            color: #3fb950;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            display: none;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>⚠️ CANARY ENGINE — ADMIN PANEL</h1>
+    <div class="header-right">
+        <div class="timestamp" id="timestamp">Loading...</div>
+        <div class="user-info">
+            Logged in as <span>{{ username }}</span>
+        </div>
+        <span class="role-badge">ADMIN</span>
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-btn">
+                👁️ Viewer View
+            </a>
+            <a href="/logout" class="logout-btn">
+                🔒 Logout
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- ADMIN BANNER -->
+    <div class="admin-banner">
+        <span>⚠️ Administrator Mode — Full system access enabled.
+            All actions are logged.</span>
+        <span>Admin: {{ username }}</span>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="grid-4">
+        <div class="stat-card">
+            <div class="stat-number stat-red"
+                id="stat-alerts">0</div>
+            <div class="stat-label">Total Alerts</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number stat-yellow"
+                id="stat-blocked">0</div>
+            <div class="stat-label">Blocked IPs</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number stat-green"
+                id="stat-canary">4</div>
+            <div class="stat-label">Canary Files</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number stat-blue"
+                id="stat-watcher">--</div>
+            <div class="stat-label">Watcher Status</div>
+        </div>
+    </div>
+
+    <!-- ROW 1: STATUS + DEMO CONTROLS + BLOCKED IPS -->
+    <div class="grid-3">
+
+        <!-- SYSTEM STATUS -->
+        <div class="card">
+            <h2>⚙️ System Status</h2>
+            <div class="status-item">
+                <span>Watcher Engine</span>
+                <span class="badge"
+                    id="watcher-badge">CHECKING...</span>
+            </div>
+            <div class="status-item">
+                <span>Samba Service</span>
+                <span class="badge"
+                    id="samba-badge">CHECKING...</span>
+            </div>
+            <div class="status-item">
+                <span>Samba Connection</span>
+                <span class="badge"
+                    id="conn-badge">CHECKING...</span>
+            </div>
+            <div class="status-item">
+                <span>iptables</span>
+                <span class="badge badge-green">ACTIVE</span>
+            </div>
+            <div class="status-item">
+                <span>Canary Files</span>
+                <span class="badge badge-green">DEPLOYED</span>
+            </div>
+
+            <div class="status-item">
+                <span>Email Alerts</span>
+                <span class="badge" id="email-badge">CHECKING...</span>
+            </div>
+
+            <!-- USAGE -->
+            <div style="margin-top:12px;
+                padding-top:12px;
+                border-top:1px solid #1e3a5f">
+                <div class="usage-item">
+                    <div class="usage-label">
+                        <span>CPU</span>
+                        <span id="cpu-val">0%</span>
+                    </div>
+                    <div class="usage-bar">
+                        <div class="usage-fill"
+                            id="cpu-bar"
+                            style="width:0%;background:#3fb950">
+                        </div>
+                    </div>
+                </div>
+                <div class="usage-item">
+                    <div class="usage-label">
+                        <span>RAM</span>
+                        <span id="ram-val">0%</span>
+                    </div>
+                    <div class="usage-bar">
+                        <div class="usage-fill"
+                            id="ram-bar"
+                            style="width:0%;background:#58a6ff">
+                        </div>
+                    </div>
+                </div>
+                <div class="usage-item">
+                    <div class="usage-label">
+                        <span>Disk</span>
+                        <span id="disk-val">0%</span>
+                    </div>
+                    <div class="usage-bar">
+                        <div class="usage-fill"
+                            id="disk-bar"
+                            style="width:0%;background:#e3b341">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DEMO CONTROLS -->
+        <div class="card danger-card">
+            <h2>🎮 Demo Controls</h2>
+
+            <div class="step-label">STEP 1 — ENGINE</div>
+            <button class="ctrl-btn btn-green"
+                onclick="startWatcher()">
+                ▶ Start Watcher
+            </button>
+            <button class="ctrl-btn btn-red"
+                onclick="stopWatcher()"
+                style="margin-bottom:12px">
+                ■ Stop Watcher
+            </button>
+
+            <div class="step-label">STEP 2 — CONNECT</div>
+            <button class="ctrl-btn btn-yellow"
+                onclick="connectSamba()"
+                style="margin-bottom:12px">
+                🔗 Connect Attacker Machine
+            </button>
+
+            <div class="step-label">STEP 3 — ATTACK</div>
+            <button class="ctrl-btn btn-red"
+                onclick="runSimulation()"
+                style="margin-bottom:12px;
+                    background:#7f1d1d">
+                ⚠️ Simulate Ransomware
+            </button>
+
+            <div class="step-label">RESET</div>
+            <button class="ctrl-btn btn-blue"
+                onclick="fullReset()">
+                🔄 Full Reset
+            </button>
+        </div>
+
+        <!-- BLOCKED IPS -->
+        <div class="card">
+            <h2>🚫 Blocked IPs</h2>
+            <div id="blocked-ips-list">
+                <div class="no-data">
+                    No IPs currently blocked ✅
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ROW 2: LOG MANAGEMENT + USER MANAGEMENT + CANARY FILES -->
+    <div class="grid-3">
+
+        <!-- LOG MANAGEMENT -->
+        <div class="card">
+            <h2>📋 Log Management</h2>
+            <button class="ctrl-btn btn-red"
+                onclick="clearLogs()">
+                🗑️ Clear All Logs
+            </button>
+            <button class="ctrl-btn btn-blue"
+                onclick="downloadLogs()">
+                ⬇️ Download Logs
+            </button>
+            <button class="ctrl-btn btn-yellow"
+                onclick="fetchLogs()">
+                ↻ Refresh Logs
+            </button>
+        </div>
+
+        <!-- USER MANAGEMENT -->
+        <div class="card">
+            <h2>👥 User Management</h2>
+            <div class="field">
+                <label>Select User</label>
+                <select id="target-user">
+                    <option value="viewer">viewer</option>
+                    <option value="admin">admin</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>New Password</label>
+                <input type="password" id="new-password"
+                    placeholder="Min 6 characters"/>
+            </div>
+            <button class="ctrl-btn btn-purple"
+                onclick="changePassword()">
+                🔑 Update Password
+            </button>
+        </div>
+
+        <!-- CANARY FILES -->
+        <div class="card">
+            <h2>🪤 Canary File Status</h2>
+            <div id="canary-list">
+                <div class="no-data">Loading...</div>
+            </div>
+            <button class="ctrl-btn btn-green"
+                onclick="resetCanary()"
+                style="margin-top:12px">
+                🔄 Restore Canary Files
+            </button>
+        </div>
+
+    </div>
+
+    <!-- LOG VIEWER -->
+    <div class="card">
+        <h2>📄 Live Log Viewer</h2>
+        <div class="log-viewer" id="log-viewer">
+            <div class="no-data">Loading logs...</div>
+        </div>
+    </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    // ─── TOAST ───
+    function showToast(msg, color="#3fb950") {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.style.borderColor = color;
+        t.style.color = color;
+        t.style.display = "block";
+        setTimeout(() => t.style.display = "none", 3000);
+    }
+
+    // ─── POST HELPER ───
+    async function post(url, body={}) {
+        try {
+            const res = await fetch(url, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(body)
+            });
+            if (res.status === 401) {
+                window.location.href = "/login";
+                return null;
+            }
+            if (res.status === 403) {
+                window.location.href = "/dashboard";
+                return null;
+            }
+            return await res.json();
+        } catch(e) {
+            showToast("Connection error: " + e.message, "#f85149");
+            return null;
+        }
+    }
+
+    // ─── STATUS ───
+    async function fetchStatus() {
+        try {
+            const res = await fetch("/api/status");
+            if (res.status === 401) {
+                window.location.href = "/login";
+                return;
+            }
+            const data = await res.json();
+
+            document.getElementById("timestamp").textContent =
+                "Last updated: " + data.timestamp;
+
+            // Watcher
+            const wb = document.getElementById("watcher-badge");
+            wb.textContent = data.watcher_running ?
+                "RUNNING" : "STOPPED";
+            wb.className = data.watcher_running ?
+                "badge badge-green" : "badge badge-red";
+            document.getElementById("stat-watcher")
+                .textContent = data.watcher_running ? "ON" : "OFF";
+
+            // Samba
+            const sb = document.getElementById("samba-badge");
+            sb.textContent = data.samba_running ?
+                "RUNNING" : "STOPPED";
+            sb.className = data.samba_running ?
+                "badge badge-green" : "badge badge-red";
+
+            // Connection
+            const cb = document.getElementById("conn-badge");
+            cb.textContent = data.samba_connected ?
+                "ACTIVE" : "NO ACTIVE CLIENT";
+            cb.className = data.samba_connected ?
+                "badge badge-green" : "badge badge-yellow";
+
+            // Email alerts
+            const eb = document.getElementById("email-badge");
+            if (data.email_enabled) {
+                eb.textContent = "ENABLED";
+                eb.className = "badge badge-green";
+            } else {
+                eb.textContent = "DISABLED";
+                eb.className = "badge badge-red";
+            }
+
+            // Stats
+            document.getElementById("stat-blocked")
+                .textContent = data.blocked_ips.length;
+
+            // Update canary files count from actual data
+            document.getElementById("stat-canary")
+                .textContent = data.canary_files.length;
+
+            // System usage
+            if (data.system) {
+                const s = data.system;
+                document.getElementById("cpu-val")
+                    .textContent = s.cpu + "%";
+                document.getElementById("cpu-bar")
+                    .style.width = s.cpu + "%";
+                document.getElementById("ram-val")
+                    .textContent = s.ram + "%";
+                document.getElementById("ram-bar")
+                    .style.width = s.ram + "%";
+                document.getElementById("disk-val")
+                    .textContent = s.disk + "%";
+                document.getElementById("disk-bar")
+                    .style.width = s.disk + "%";
+            }
+
+            // Blocked IPs
+            const ipList = document
+                .getElementById("blocked-ips-list");
+            if (data.blocked_ips.length === 0) {
+                ipList.innerHTML =
+                    '<div class="no-data">No IPs blocked ✅</div>';
+            } else {
+                ipList.innerHTML = data.blocked_ips.map(ip => `
+                    <div class="ip-item">
+                        <span class="ip-address">🔴 ${ip}</span>
+                        <button class="unblock-btn"
+                            onclick="unblockIP('${ip}')">
+                            UNBLOCK
+                        </button>
+                    </div>
+                `).join("");
+            }
+
+            // Canary files
+            const cl = document.getElementById("canary-list");
+            cl.innerHTML = data.canary_files.map(f => `
+                <div class="canary-item">
+                    <div>
+                        <div style="color:#c9d1d9;font-size:12px">
+                            ${f.exists ? "🟢" : "🔴"} ${f.name}
+                        </div>
+                        <div style="color:#8b949e;font-size:11px">
+                            ${f.modified} | ${f.size}B
+                        </div>
+                    </div>
+                </div>
+            `).join("");
+
+        } catch(e) {
+            console.error("Status error:", e);
+        }
+    }
+
+    // ─── LOGS ───
+    async function fetchLogs() {
+        try {
+            const res = await fetch("/api/logs");
+            const data = await res.json();
+
+            const viewer = document.getElementById("log-viewer");
+            let alertCount = 0;
+
+            const html = data.logs.map(line => {
+                let cls = "log-line";
+                if (line.includes("CANARY TRIGGERED")) {
+                    cls += " alert";
+                    alertCount++;
+                } else if (line.includes("RANSOMWARE")) {
+                    cls += " alert";
+                } else if (line.includes("SUCCESS") ||
+                           line.includes("BLOCKED")) {
+                    cls += " success";
+                } else if (line.includes("STARTED") ||
+                           line.includes("ACTIVE")) {
+                    cls += " info";
+                }
+                return `<div class="${cls}">${line}</div>`;
+            }).join("");
+
+            viewer.innerHTML = html ||
+                '<div class="no-data">No logs yet</div>';
+            document.getElementById("stat-alerts")
+                .textContent = alertCount;
+
+        } catch(e) {
+            console.error("Log error:", e);
+        }
+    }
+
+    // ─── CONTROLS ───
+    async function startWatcher() {
+        const d = await post("/api/start_watcher");
+        if (d) showToast(d.message,
+            d.success ? "#3fb950" : "#f85149");
+        fetchStatus();
+    }
+
+    async function stopWatcher() {
+        const d = await post("/api/stop_watcher");
+        if (d) showToast(d.message,
+            d.success ? "#3fb950" : "#f85149");
+        fetchStatus();
+    }
+
+    async function connectSamba() {
+        showToast("Connecting attacker machine...", "#e3b341");
+        const d = await post("/api/connect_samba");
+        if (d) showToast(d.message,
+            d.success ? "#3fb950" : "#f85149");
+        fetchStatus();
+    }
+
+    async function runSimulation() {
+        showToast("Launching simulation...", "#e3b341");
+        const d = await post("/api/simulate");
+        if (d) showToast(d.message,
+            d.success ? "#3fb950" : "#f85149");
+    }
+
+    async function fullReset() {
+        const d = await post("/api/full_reset");
+        if (d) showToast(d.message,
+            d.success ? "#3fb950" : "#f85149");
+        fetchAll();
+    }
+
+    async function unblockIP(ip) {
+        const d = await post("/api/unblock", {ip});
+        if (d) showToast(d.message,
+            d.success ? "#3fb950" : "#f85149");
+        fetchStatus();
+    }
+
+    async function resetCanary() {
+        const d = await post("/api/reset_canary");
+        if (d) showToast(d.message,
+            d.success ? "#3fb950" : "#f85149");
+        fetchStatus();
+    }
+
+    async function clearLogs() {
+        if (!confirm("Clear all logs? This cannot be undone."))
+            return;
+        const d = await post("/api/clear_logs");
+        if (d) showToast(d.message,
+            d.success ? "#3fb950" : "#f85149");
+        fetchLogs();
+    }
+
+    function downloadLogs() {
+        window.open("/api/download_logs", "_blank");
+    }
+
+    async function changePassword() {
+        const username = document
+            .getElementById("target-user").value;
+        const new_password = document
+            .getElementById("new-password").value;
+
+        if (!new_password || new_password.length < 6) {
+            showToast("Password must be at least 6 characters",
+                "#f85149");
+            return;
+        }
+
+        const d = await post("/api/change_password",
+            {username, new_password});
+        if (d) {
+            showToast(d.message,
+                d.success ? "#3fb950" : "#f85149");
+            document.getElementById("new-password").value = "";
+        }
+    }
+
+    function fetchAll() {
+        fetchStatus();
+        fetchLogs();
+    }
+
+    fetchAll();
+    setInterval(fetchAll, 1000);
+</script>
+
+</body>
+</html>

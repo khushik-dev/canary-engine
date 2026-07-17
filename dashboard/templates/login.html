@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Canary Engine</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0e1a;
+            color: #e0e6f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: #0d1117;
+            border-bottom: 1px solid #1e3a5f;
+            padding: 16px 24px;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            color: #58a6ff;
+            letter-spacing: 2px;
+        }
+
+        .header h1 span { color: #f85149; }
+
+        .container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .login-card {
+            background: #0d1117;
+            border: 1px solid #1e3a5f;
+            border-radius: 12px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .shield {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .title {
+            font-size: 20px;
+            color: #58a6ff;
+            letter-spacing: 3px;
+            text-align: center;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #8b949e;
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 11px;
+            color: #8b949e;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .field input {
+            width: 100%;
+            background: #161b22;
+            border: 1px solid #1e3a5f;
+            border-radius: 6px;
+            padding: 12px 14px;
+            color: #e0e6f0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .field input:focus {
+            border-color: #58a6ff;
+        }
+
+        .login-btn {
+            width: 100%;
+            background: #1f6feb;
+            border: none;
+            border-radius: 6px;
+            padding: 14px;
+            color: white;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: opacity 0.2s;
+        }
+
+        .login-btn:hover { opacity: 0.85; }
+
+        .error-msg {
+            background: #2d1117;
+            border: 1px solid #da3633;
+            border-radius: 6px;
+            padding: 10px 14px;
+            color: #f85149;
+            font-size: 12px;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .roles-info {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #1e3a5f;
+        }
+
+        .role-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 12px;
+            color: #8b949e;
+        }
+
+        .role-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .role-admin {
+            background: #2d1117;
+            color: #f85149;
+            border: 1px solid #da3633;
+        }
+
+        .role-viewer {
+            background: #0d2f1f;
+            color: #3fb950;
+            border: 1px solid #238636;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🛡️ CANARY ENGINE <span>SECURITY</span></h1>
+</div>
+
+<div class="container">
+    <div class="login-card">
+        <div class="shield">🔐</div>
+        <div class="title">SECURE LOGIN</div>
+        <div class="subtitle">
+            Ransomware Detection Canary Engine
+        </div>
+
+        <div class="field">
+            <label>Username</label>
+            <input type="text" id="username"
+                placeholder="Enter username"
+                autocomplete="off"/>
+        </div>
+
+        <div class="field">
+            <label>Password</label>
+            <input type="password" id="password"
+                placeholder="Enter password"
+                onkeydown="if(event.key==='Enter') login()"/>
+        </div>
+
+        <button class="login-btn" onclick="login()">
+            → LOGIN
+        </button>
+
+        <div class="error-msg" id="error-msg"></div>
+
+        <div class="roles-info">
+            <div class="role-item">
+                <span>Administrator</span>
+                <span class="role-badge role-admin">
+                    Full Access
+                </span>
+            </div>
+            <div class="role-item">
+                <span>Viewer</span>
+                <span class="role-badge role-viewer">
+                    Read Only
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function login() {
+        const username = document
+            .getElementById("username").value.trim();
+        const password = document
+            .getElementById("password").value.trim();
+
+        if (!username || !password) {
+            showError("Please enter username and password");
+            return;
+        }
+
+        try {
+            const res = await fetch("/login", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({username, password})
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                window.location.href = data.redirect;
+            } else {
+                showError(data.message);
+
+                // If locked out — start countdown timer
+                if (data.locked && data.remaining) {
+                    startLockoutTimer(data.remaining);
+                }
+            }
+        } catch(e) {
+            showError("Connection error — is the server running?");
+        }
+    }
+
+    function showError(msg) {
+        const el = document.getElementById("error-msg");
+        el.textContent = "❌ " + msg;
+        el.style.display = "block";
+        setTimeout(() => el.style.display = "none", 5000);
+    }
+
+    function startLockoutTimer(seconds) {
+        const btn = document.querySelector(".login-btn");
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
+        btn.style.cursor = "not-allowed";
+
+        let remaining = seconds;
+        const interval = setInterval(() => {
+            remaining--;
+            btn.textContent = `⏳ Locked out — ${remaining}s remaining`;
+
+            if (remaining <= 0) {
+                clearInterval(interval);
+                btn.disabled = false;
+                btn.style.opacity = "1";
+                btn.style.cursor = "pointer";
+                btn.textContent = "→ LOGIN";
+                document.getElementById("error-msg")
+                    .style.display = "none";
+            }
+        }, 1000);
+    }
+
+    // Focus username on load
+    window.onload = () =>
+        document.getElementById("username").focus();
+</script>
+
+</body>
+</html>

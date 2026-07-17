@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — Canary Engine</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0e1a;
+            color: #e0e6f0;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #0d1117;
+            border-bottom: 1px solid #1e3a5f;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            color: #58a6ff;
+            letter-spacing: 2px;
+        }
+
+        .header h1 span { color: #3fb950; }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-info {
+            font-size: 12px;
+            color: #8b949e;
+        }
+
+        .user-info span {
+            color: #3fb950;
+            font-weight: bold;
+        }
+
+        .role-badge {
+            font-size: 10px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: #0d2f1f;
+            color: #3fb950;
+            border: 1px solid #238636;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid #1e3a5f;
+            color: #8b949e;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            text-decoration: none;
+        }
+
+        .logout-btn:hover {
+            border-color: #f85149;
+            color: #f85149;
+        }
+
+        .timestamp {
+            font-size: 11px;
+            color: #8b949e;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* READ ONLY BANNER */
+        .readonly-banner {
+            background: #0d2f1f;
+            border: 1px solid #238636;
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 12px;
+            color: #3fb950;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .card {
+            background: #0d1117;
+            border: 1px solid #1e3a5f;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .card h2 {
+            font-size: 11px;
+            color: #8b949e;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #1e3a5f;
+        }
+
+        /* STAT CARDS */
+        .stat-card {
+            background: #0d1117;
+            border: 1px solid #1e3a5f;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #8b949e;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .stat-red { color: #f85149; }
+        .stat-green { color: #3fb950; }
+        .stat-blue { color: #58a6ff; }
+        .stat-yellow { color: #e3b341; }
+
+        /* STATUS */
+        .status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #161b22;
+            font-size: 13px;
+        }
+
+        .status-item:last-child { border-bottom: none; }
+
+        .badge {
+            font-size: 10px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .badge-green {
+            background: #0d2f1f;
+            color: #3fb950;
+            border: 1px solid #238636;
+        }
+
+        .badge-red {
+            background: #2d1117;
+            color: #f85149;
+            border: 1px solid #da3633;
+        }
+
+        .badge-yellow {
+            background: #2d2100;
+            color: #e3b341;
+            border: 1px solid #9e6a03;
+        }
+
+        /* CPU/RAM BARS */
+        .usage-item {
+            margin-bottom: 12px;
+        }
+
+        .usage-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #8b949e;
+            margin-bottom: 4px;
+        }
+
+        .usage-bar {
+            height: 6px;
+            background: #161b22;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .usage-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s;
+        }
+
+        .fill-green { background: #3fb950; }
+        .fill-yellow { background: #e3b341; }
+        .fill-red { background: #f85149; }
+
+        /* LOG VIEWER */
+        .log-viewer {
+            background: #010409;
+            border: 1px solid #1e3a5f;
+            border-radius: 6px;
+            padding: 12px;
+            height: 280px;
+            overflow-y: auto;
+            font-size: 11px;
+            line-height: 1.8;
+        }
+
+        .log-line { color: #8b949e; }
+        .log-line.alert { color: #f85149; font-weight: bold; }
+        .log-line.success { color: #3fb950; }
+        .log-line.info { color: #58a6ff; }
+
+        /* CANARY FILES */
+        .canary-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #161b22;
+            font-size: 12px;
+        }
+
+        .canary-item:last-child { border-bottom: none; }
+        .canary-name { color: #c9d1d9; }
+        .canary-meta { color: #8b949e; font-size: 11px; }
+
+        /* ALERT FEED */
+        .alert-item {
+            background: #2d1117;
+            border: 1px solid #da3633;
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity:0; transform:translateY(-4px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+
+        .alert-time { color: #8b949e; font-size: 11px; }
+        .alert-msg { color: #f85149; font-weight: bold; }
+        .no-data {
+            color: #8b949e;
+            font-size: 12px;
+            text-align: center;
+            padding: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🛡️ CANARY ENGINE <span>MONITOR</span></h1>
+    <div class="header-right">
+        <div class="timestamp" id="timestamp">Loading...</div>
+        <div class="user-info">
+            Logged in as <span>{{ username }}</span>
+        </div>
+        <span class="role-badge">VIEWER</span>
+        <a href="/logout" class="logout-btn">🔒 Logout</a>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- READ ONLY BANNER -->
+    <div class="readonly-banner">
+        <span>👁️ Read-Only Mode — You are viewing as a Viewer.
+            Controls are restricted to administrators only.</span>
+        <span>Role: VIEWER</span>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="grid-4">
+        <div class="stat-card">
+            <div class="stat-number stat-red"
+                id="stat-alerts">0</div>
+            <div class="stat-label">Total Alerts</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number stat-yellow"
+                id="stat-blocked">0</div>
+            <div class="stat-label">Blocked IPs</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number stat-green"
+                id="stat-canary">4</div>
+            <div class="stat-label">Canary Files</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number stat-blue"
+                id="stat-watcher">--</div>
+            <div class="stat-label">Watcher Status</div>
+        </div>
+    </div>
+
+    <!-- ROW 1: STATUS + SYSTEM USAGE -->
+    <div class="grid-2">
+
+        <!-- SYSTEM STATUS -->
+        <div class="card">
+            <h2>⚙️ System Status</h2>
+            <div class="status-item">
+                <span>Watcher Engine</span>
+                <span class="badge"
+                    id="watcher-badge">CHECKING...</span>
+            </div>
+            <div class="status-item">
+                <span>Samba Service</span>
+                <span class="badge"
+                    id="samba-badge">CHECKING...</span>
+            </div>
+            <div class="status-item">
+                <span>Samba Connection</span>
+                <span class="badge"
+                    id="conn-badge">CHECKING...</span>
+            </div>
+            <div class="status-item">
+                <span>iptables Firewall</span>
+                <span class="badge badge-green">ACTIVE</span>
+            </div>
+            <div class="status-item">
+                <span>Canary Files</span>
+                <span class="badge badge-green">DEPLOYED</span>
+            </div>
+
+            <div class="status-item">
+                <span>Email Alerts</span>
+                <span class="badge" id="email-badge">CHECKING...</span>
+            </div>
+        </div>
+
+        <!-- SYSTEM USAGE -->
+        <div class="card">
+            <h2>📊 System Usage</h2>
+            <div class="usage-item">
+                <div class="usage-label">
+                    <span>CPU</span>
+                    <span id="cpu-val">0%</span>
+                </div>
+                <div class="usage-bar">
+                    <div class="usage-fill fill-green"
+                        id="cpu-bar" style="width:0%"></div>
+                </div>
+            </div>
+            <div class="usage-item">
+                <div class="usage-label">
+                    <span>RAM</span>
+                    <span id="ram-val">0%</span>
+                </div>
+                <div class="usage-bar">
+                    <div class="usage-fill fill-blue"
+                        id="ram-bar" style="width:0%"
+                        style="background:#58a6ff"></div>
+                </div>
+            </div>
+            <div class="usage-item">
+                <div class="usage-label">
+                    <span>Disk</span>
+                    <span id="disk-val">0%</span>
+                </div>
+                <div class="usage-bar">
+                    <div class="usage-fill fill-yellow"
+                        id="disk-bar" style="width:0%"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ROW 2: CANARY FILES + LIVE ALERTS -->
+    <div class="grid-2">
+
+        <!-- CANARY FILE STATUS -->
+        <div class="card">
+            <h2>🪤 Canary File Status</h2>
+            <div id="canary-list">
+                <div class="no-data">Loading...</div>
+            </div>
+        </div>
+
+        <!-- LIVE ALERTS -->
+        <div class="card">
+            <h2>🚨 Live Alerts</h2>
+            <div id="alert-feed" style="max-height:200px;
+                overflow-y:auto">
+                <div class="no-data">
+                    No alerts yet — system is monitoring
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ROW 3: FULL LOG VIEWER -->
+    <div class="card">
+        <h2>📋 Live Log Viewer</h2>
+        <div class="log-viewer" id="log-viewer">
+            <div class="no-data">Loading logs...</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let alertHistory = [];
+
+    async function fetchStatus() {
+        try {
+            const res = await fetch("/api/status");
+            if (res.status === 401) {
+                window.location.href = "/login";
+                return;
+            }
+            const data = await res.json();
+
+            document.getElementById("timestamp").textContent =
+                "Last updated: " + data.timestamp;
+
+            // Watcher
+            const wb = document.getElementById("watcher-badge");
+            if (data.watcher_running) {
+                wb.textContent = "RUNNING";
+                wb.className = "badge badge-green";
+                document.getElementById("stat-watcher")
+                    .textContent = "ON";
+            } else {
+                wb.textContent = "STOPPED";
+                wb.className = "badge badge-red";
+                document.getElementById("stat-watcher")
+                    .textContent = "OFF";
+            }
+
+            // Samba
+            const sb = document.getElementById("samba-badge");
+            sb.textContent = data.samba_running ?
+                "RUNNING" : "STOPPED";
+            sb.className = data.samba_running ?
+                "badge badge-green" : "badge badge-red";
+
+            // Connection
+            const cb = document.getElementById("conn-badge");
+            cb.textContent = data.samba_connected ?
+                "ACTIVE" : "NO ACTIVE CLIENT";
+            cb.className = data.samba_connected ?
+                "badge badge-green" : "badge badge-yellow";
+
+            // Email alerts
+            const eb = document.getElementById("email-badge");
+            if (data.email_enabled) {
+                eb.textContent = "ENABLED";
+                eb.className = "badge badge-green";
+            } else {
+                eb.textContent = "DISABLED";
+                eb.className = "badge badge-red";
+            }
+
+            // Blocked IPs count
+            document.getElementById("stat-blocked")
+                .textContent = data.blocked_ips.length;
+
+            // Update canary files count from actual data
+            document.getElementById("stat-canary")
+                .textContent = data.canary_files.length;
+
+            // System stats
+            if (data.system) {
+                const s = data.system;
+                document.getElementById("cpu-val")
+                    .textContent = s.cpu + "%";
+                document.getElementById("cpu-bar")
+                    .style.width = s.cpu + "%";
+                document.getElementById("ram-val")
+                    .textContent = s.ram + "% (" +
+                    s.ram_used + "/" + s.ram_total + " GB)";
+                document.getElementById("ram-bar")
+                    .style.width = s.ram + "%";
+                document.getElementById("disk-val")
+                    .textContent = s.disk + "% (" +
+                    s.disk_used + "/" + s.disk_total + " GB)";
+                document.getElementById("disk-bar")
+                    .style.width = s.disk + "%";
+            }
+
+            // Canary files
+            const cl = document.getElementById("canary-list");
+            cl.innerHTML = data.canary_files.map(f => `
+                <div class="canary-item">
+                    <div>
+                        <div class="canary-name">
+                            ${f.exists ? "🟢" : "🔴"} ${f.name}
+                        </div>
+                        <div class="canary-meta">
+                            Modified: ${f.modified} |
+                            Size: ${f.size} bytes
+                        </div>
+                    </div>
+                </div>
+            `).join("");
+
+        } catch(e) {
+            console.error("Status error:", e);
+        }
+    }
+
+    async function fetchLogs() {
+        try {
+            const res = await fetch("/api/logs");
+            const data = await res.json();
+
+            // Update log viewer
+            const viewer = document.getElementById("log-viewer");
+            let alertCount = 0;
+            const newAlerts = [];
+
+            const html = data.logs.map(line => {
+                let cls = "log-line";
+                if (line.includes("CANARY TRIGGERED")) {
+                    cls += " alert";
+                    alertCount++;
+                    newAlerts.push(line);
+                } else if (line.includes("RANSOMWARE")) {
+                    cls += " alert";
+                } else if (line.includes("SUCCESS") ||
+                           line.includes("BLOCKED")) {
+                    cls += " success";
+                } else if (line.includes("STARTED") ||
+                           line.includes("ACTIVE")) {
+                    cls += " info";
+                }
+                return `<div class="${cls}">${line}</div>`;
+            }).join("");
+
+            viewer.innerHTML = html ||
+                '<div class="no-data">No logs yet</div>';
+
+            // Update alert count
+            document.getElementById("stat-alerts")
+                .textContent = alertCount;
+
+            // Update alert feed
+            const feed = document.getElementById("alert-feed");
+            if (newAlerts.length > 0) {
+                feed.innerHTML = newAlerts.slice(0, 5).map(a => `
+                    <div class="alert-item">
+                        <div class="alert-msg">
+                            ⚠️ RANSOMWARE DETECTED
+                        </div>
+                        <div class="alert-time">${a}</div>
+                    </div>
+                `).join("");
+            } else {
+                feed.innerHTML =
+                    '<div class="no-data">No alerts — monitoring active</div>';
+            }
+
+        } catch(e) {
+            console.error("Log error:", e);
+        }
+    }
+
+    function fetchAll() {
+        fetchStatus();
+        fetchLogs();
+    }
+
+    fetchAll();
+    setInterval(fetchAll, 3000);
+</script>
+
+</body>
+</html>
