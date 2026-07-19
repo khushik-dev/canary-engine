@@ -77,10 +77,7 @@ SIMULATED_ATTACKER_IP = "192.168.1.100"
 SIMULATION_MODE = False   # set to True by simulate_attack.py
 
 # --- EMAIL ALERT SETTINGS ---
-EMAIL_ENABLED      = True
-EMAIL_SENDER       = "REDACTED"    # your gmail address
-EMAIL_PASSWORD     = "REDACTED"     # your 16-char app password
-EMAIL_RECEIVER     = "REDACTED"    # where to send
+# Only non-secret defaults.
 EMAIL_SMTP_SERVER  = "smtp.gmail.com"
 EMAIL_SMTP_PORT    = 587
 
